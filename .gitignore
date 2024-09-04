@@ -2,5 +2,6 @@ events.pkl
 events.csv
 events_formatted.csv
 LiveLabView.spec
+/__pycache__
 /build
 /dist
