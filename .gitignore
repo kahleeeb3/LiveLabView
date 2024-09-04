@@ -1,2 +1,3 @@
-build/
-LiveLabView.spec
+events.pkl
+events.csv
+events_formatted.csv
