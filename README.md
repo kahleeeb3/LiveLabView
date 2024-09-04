@@ -4,5 +4,5 @@ Reads an excel file with a lab schedule and displays the labs that are currently
 # Notes
 Compile python files into windows executables
 ```
-python -m PyInstaller LiveLabView.py --onefile --noconsole
+PyInstaller -F LiveLabView.py --noconsole
 ```
