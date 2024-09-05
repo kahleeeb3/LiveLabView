@@ -17,7 +17,7 @@ def get_curr_classes(df, day, time):
 
     active_class[["Start", "End"]] = active_class[["Start", "End"]].map(get_time_str) # convert 9:30p to 9:30PM
 
-    return active_class
+    return active_class[['Name', 'Section', 'Title', 'Start', 'End', 'Location', 'Instructor']]
 
 def get_curr_time():
     curr_time = datetime.today()

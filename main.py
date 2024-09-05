@@ -1,53 +1,48 @@
-from data import load_pkl, get_curr_classes, get_curr_time
-
-
-from tkinter import Tk, Entry, END
-
+import tkinter as tk
+from tkinter import ttk
+from data import load_pkl, get_curr_time, get_curr_classes
 
 class LiveLabView:
     def __init__(self, root):
         self.root = root
-        self.root.title("Live Lab View")
-        self.load_classes()
-        self.table_init()
+        self.get_all_classes() # assign data to self.classes
+        self.get_curr_classes() # assign data to self.curr_classes
+        self.create_table() # create the table headers & sizes
+        self.update_table() # load data into table
 
-    def load_classes(self):
+    def get_all_classes(self):
         self.classes = load_pkl()
 
-    def update_curr_classes(self):
+    def get_curr_classes(self):
         day, time = get_curr_time()
-        curr_classes = get_curr_classes(self.classes, day, time)
-        self.df = curr_classes
+        self.curr_classes = get_curr_classes(self.classes, day, time)
+    
+    def create_table(self):
+        self.treeview = ttk.Treeview(root, show="headings")
+        self.treeview.pack(expand=True, fill='both')
+        columns = self.curr_classes.columns.values.tolist()
+        sizes = {"Name":75, "Section":75, "Title":160, "Start": 60, "End": 60, "Location": 75, "Instructor": 300}
+        self.treeview["columns"] = columns # set column names
 
-    def table_init(self):
-        self.update_curr_classes()
+        for i, c in enumerate(columns):
+            self.treeview.heading(c, text=c, anchor='w')
+            self.treeview.column(c, width=sizes.get(c, 75), anchor='w')
 
-        # update headers
-        headers = self.df.columns.values.tolist()
-        for i, h in enumerate(headers):
-            self.e = Entry(self.root)
-            self.e.grid(row=0, column=i)
-            self.e.insert(END, h)
+    def update_table(self):
 
-        self.table_update()
+        self.get_curr_classes() # query new data
 
-    def table_update(self):
-        n_rows = len(self.df)
+        # clear previous data
+        for item in self.treeview.get_children():
+            self.treeview.delete(item)
 
-        for i in range(n_rows):
-            row = self.df.iloc[i].values.tolist()
-            for j, r in enumerate(row):
-                self.e = Entry(self.root)
-                self.e.grid(row=i+1, column=j)
-                self.e.insert(END, r)
+        # update table
+        for _ , row in self.curr_classes.iterrows():
+            self.treeview.insert('', 'end', values=row.tolist())
 
+        self.root.after(600000, self.update_table) # update every 10 min
 
-def main():
-    root = Tk()
+if __name__=="__main__":
+    root = tk.Tk()
     app = LiveLabView(root)
-    root.iconbitmap("icon.ico")
     root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
