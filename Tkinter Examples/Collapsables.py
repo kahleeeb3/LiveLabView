@@ -36,8 +36,8 @@ if __name__=="__main__":
     window = Window(root)
 
     # create collapsable
-    menu1 = Collapsable(master=window.bottom_left, row=0, column=0, name="Title 1", width=13)
-    menu2 = Collapsable(master=window.bottom_left, row=1, column=0, name="Title 2", width=13)
+    menu1 = Collapsable(master=window.bottom_left_frame, row=0, column=0, name="Title 1", width=13)
+    menu2 = Collapsable(master=window.bottom_left_frame, row=1, column=0, name="Title 2", width=13)
 
     # add some content
     label1 = tk.Label(menu1.collapsed_content, text='Some Text')

@@ -17,12 +17,12 @@ class Window:
         self.bottom_frame.grid(row=1, sticky="nsew")
     
     def create_bottom_left_frame(self):
-        self.bottom_left = tk.Frame(self.bottom_frame, bg='blue', width=100, height=190)
-        self.bottom_left.grid(row=0, column=0, sticky="nsew")
+        self.bottom_left_frame = tk.Frame(self.bottom_frame, bg='blue', width=100, height=190)
+        self.bottom_left_frame.grid(row=0, column=0, sticky="nsew")
 
     def create_bottom_right_frame(self):
-        self.bottom_right = tk.Frame(self.bottom_frame, bg='yellow', width=250, height=190)
-        self.bottom_right.grid(row=0, column=1, sticky="nsew")
+        self.bottom_right_frame = tk.Frame(self.bottom_frame, bg='yellow', width=250, height=190)
+        self.bottom_right_frame.grid(row=0, column=1, sticky="nsew")
 
 
 if __name__=="__main__":
