@@ -1,23 +1,5 @@
 import tkinter as tk
-
-# root
-root = tk.Tk()
-
-# top frame
-top_frame = tk.Frame(root, bg='red', width=50, height=25)
-top_frame.grid(row=0, sticky="ew")
-
-# center frame
-center = tk.Frame(root, bg='green', width=50, height=25)
-center.grid(row=1, sticky="nsew") # where on root frame
-
-# center left frame
-center_left = tk.Frame(center, bg='blue', width=100, height=190)
-center_left.grid(row=0, column=0, sticky="nsw")
-
-# center right frame
-center_right = tk.Frame(center, bg='yellow', width=250, height=190)
-center_right.grid(row=0, column=1, sticky="nse")
+from Frames import Window # see previous example
 
 class Collapsable():
     def __init__(self, master, row, column, name, width):
@@ -49,16 +31,20 @@ class Collapsable():
             self.collapsed_content.grid()
             self.button.config(text=f'{self.name} \u25BC')
 
-# create collapsable
-menu1 = Collapsable(master=center_left, row=0, column=0, name="Title 1", width=13)
+if __name__=="__main__":
+    root = tk.Tk()
+    window = Window(root)
 
-menu2 = Collapsable(master=center_left, row=1, column=0, name="Title 2", width=13)
+    # create collapsable
+    menu1 = Collapsable(master=window.bottom_left, row=0, column=0, name="Title 1", width=13)
+    menu2 = Collapsable(master=window.bottom_left, row=1, column=0, name="Title 2", width=13)
 
-# add some content
-label1 = tk.Label(menu1.collapsed_content, text='Some Text')
-label1.grid(row=0, column=0)
+    # add some content
+    label1 = tk.Label(menu1.collapsed_content, text='Some Text')
+    label2 = tk.Label(menu2.collapsed_content, text='Some Text')
 
-label2 = tk.Label(menu2.collapsed_content, text='Some Text')
-label2.grid(row=0, column=0)
+    # place the content
+    label1.grid(row=0, column=0)
+    label2.grid(row=0, column=0)
 
-root.mainloop()
+    root.mainloop()
