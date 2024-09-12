@@ -1,85 +1,57 @@
 import pandas as pd
-import pandas as pd
-from datetime import datetime
+import datetime as dt
 
-def get_curr_classes(df, day, time):
-
-    def get_time_str(cell):
-        return datetime.strftime(cell, "%I:%M%p")
+def parse_time_str(time_str: str) -> dt.time:
+    """
+    Accepts strings in the format of HH:MM(a/p) and
+    returns a time object representing that string
+    EX: 9:30p -> 21:30:00
+    """
+    if(time_str == "noon"):
+        return dt.time(12, 0)
     
-    today = df[df["Day"] == day]
-    time = datetime.strptime(time, "%I:%M%p") # format the time
-
-    active_class_truth_table = today.apply(lambda x: x["Start"] <= time <= x["End"], axis=1)
-    active_class_index = today.index[active_class_truth_table]
-
-    active_class = today.loc[active_class_index]
-
-    active_class[["Start", "End"]] = active_class[["Start", "End"]].map(get_time_str) # convert 9:30p to 9:30PM
-
-    return active_class[['Name', 'Section', 'Title', 'Start', 'End', 'Location', 'Instructor']]
-
-def get_curr_time():
-    curr_time = datetime.today()
-
-    # get the day
-    day = curr_time.strftime('%A')
-    day_abbrv = {
-        'Monday': 'M',
-        'Tuesday': 'T',
-        'Wednesday': 'W',
-        'Thursday': 'Th',
-        'Friday': 'F',
-        'Saturday': 'S',
-        'Sunday': 'Su'
-    }
-    day = day_abbrv[day]
-
-    # get the time
-    time = curr_time.strftime('%I:%M%p')
-
-    return [day, time]
-
-def load_csv():
-
-    def format_time_str(cell):
-        return cell.replace('p', 'PM').replace('a', 'AM')
-
-    def format_instructor_str(cell):
-        return cell.replace('\n', ', ')
-
-    def get_time_obj(cell):
-        return datetime.strptime(cell, "%I:%M%p")
-
-    df = pd.read_csv('events.csv', usecols=['Name', 'Section', 'Title', 'Day Of Week', 'Location', 'Instructor / Organization', 'Published Start', 'Published End'])
-
-    df = df.rename(columns={'Day Of Week':'Day', 'Instructor / Organization':'Instructor', 'Published Start': 'Start', 'Published End':'End'}) # rename columns
+    elif(time_str == "midnight"):
+        return dt.time(0, 0)
     
-    df = df[df['Name'] != 'Not Available'] # Remove non available Courses
-    
-    df = df.astype(str) # convert to str
-    day_order = ["M", "T", "W", "Th", "F"] # define day categories
-    df['Day'] = pd.Categorical(df['Day'], categories=day_order, ordered=True) # make days categorical
-    df = df.sort_values(by=['Name', 'Day']) # Sort by name and then day
+    else:
+        split = time_str.split(":")
+        hour = int(split[0])
+        minute = int(split[1][:2])
+        meridiem = split[1][2:]
 
-    df[["Start", "End"]] = df[["Start", "End"]].map(format_time_str) # convert 9:30p to 9:30PM
-    df[["Instructor"]] = df[["Instructor"]].map(format_instructor_str) # remove \n
+        if(meridiem == 'p' and hour != 12):
+            hour += 12
 
-    df.to_csv("events_formatted.csv", index=False) # export CSV for better readability
+        return dt.time(hour, minute)
 
-    df[["Start", "End"]] = df[["Start", "End"]].map(get_time_obj) # convert to time
+def parse_date_str(date_str: str) -> dt.date:
+    """
+    Accepts strings in the format of MM/DD/YYY and
+    returns a date object representing that string
+    """
+    month, day, year = date_str.split("/")
+    return dt.date(int(year), int(month), int(day))
 
-    df.to_pickle("events.pkl")
-    print("LOG: Pickle file created!")
+def load_df(file_name: str) -> pd.DataFrame:
+    """
+    Loads and formats a DataFrame from the given csv filename
+    returns the DataFrame Object
+    """
+
+    cols = ["Name", "Section", "Type", "Title", "Date", "Published Start", "Published End", "Location", "Instructor / Organization"]
+    df = pd.read_csv(file_name, usecols= cols)
+
+    # format
+    df = df.rename(columns={'Published Start': 'Start', 'Published End':'End'})
+    df[["Start", "End"]] = df[["Start", "End"]].map(parse_time_str)
+    df[["Date"]] = df[["Date"]].map(parse_date_str)
 
     return df
 
-def load_pkl():
-    try:
-        print("LOG: Loading pickle file...")
-        df = pd.read_pickle("events.pkl")
-        print("Pickle file loaded successfully!")
-        return df
-    except FileNotFoundError:
-        print("ERROR: Pickle file not found. Attempting to create...")
-        return load_csv()
+def get_now(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Gets the objects of the DataFrame which are scheduled to be now
+    """
+    today = dt.datetime.today()
+    df_now = df[(df["Date"] == today.date()) & (df["Start"] <= today.time()) & (df["End"] >= today.time())]
+    return df_now

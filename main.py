@@ -1,48 +1,52 @@
 import tkinter as tk
 from tkinter import ttk
-from data import load_pkl, get_curr_time, get_curr_classes
+import tk_helper as tkh
+import data
 
-class LiveLabView:
-    def __init__(self, root):
-        self.root = root
-        self.get_all_classes() # assign data to self.classes
-        self.get_curr_classes() # assign data to self.curr_classes
-        self.create_table() # create the table headers & sizes
-        self.update_table() # load data into table
-
-    def get_all_classes(self):
-        self.classes = load_pkl()
-
-    def get_curr_classes(self):
-        day, time = get_curr_time()
-        self.curr_classes = get_curr_classes(self.classes, day, time)
-    
-    def create_table(self):
-        self.treeview = ttk.Treeview(root, show="headings")
-        self.treeview.pack(expand=True, fill='both')
-        columns = self.curr_classes.columns.values.tolist()
-        sizes = {"Name":75, "Section":75, "Title":160, "Start": 60, "End": 60, "Location": 75, "Instructor": 300}
-        self.treeview["columns"] = columns # set column names
-
-        for i, c in enumerate(columns):
-            self.treeview.heading(c, text=c, anchor='w')
-            self.treeview.column(c, width=sizes.get(c, 75), anchor='w')
-
-    def update_table(self):
-
-        self.get_curr_classes() # query new data
-
-        # clear previous data
-        for item in self.treeview.get_children():
-            self.treeview.delete(item)
-
-        # update table
-        for _ , row in self.curr_classes.iterrows():
-            self.treeview.insert('', 'end', values=row.tolist())
-
-        self.root.after(600000, self.update_table) # update every 10 min
 
 if __name__=="__main__":
+
+    # load in the data
+    df = data.load_df("meetings.csv")
+    df_now = data.get_now(df)
+
+    # create the tk app
     root = tk.Tk()
-    app = LiveLabView(root)
+    window = tkh.Window(root)
+
+    # define collapsible section
+    location_menu = tkh.Collapsable(master=window.bottom_left_frame, row=0, column=0, name="Location", width=13)
+
+    scrollFrame = tkh.ScrollFrame(location_menu.collapsed_content, width=25, height=222)
+
+    locations = sorted(df_now["Location"].unique())
+    for i, l in enumerate(locations):
+        tk.Checkbutton(scrollFrame.viewPort, text=l).grid(row=i, sticky=tk.W)
+        pass
+
+    scrollFrame.pack(side="top", fill="both", expand=True)
+
+    # last update
+    update_text = tk.Label(window.top_frame, text='Last Update:')
+    update_text.grid(row=0, column=0, sticky="e")
+
+    # define update button
+    button = tk.Button(window.bottom_right_frame, text='Update', width=25)
+    button.grid(row=0, column=0, sticky="e")
+
+    # create table
+    treeview = ttk.Treeview(window.bottom_right_frame, show="headings")
+    treeview.grid(row=1, column=0, sticky="w")
+    columns = df_now.columns.values.tolist()
+    sizes = {"Name":75, "Section":75, "Title":160, "Start": 60, "End": 60, "Location": 75, "Instructor": 300}
+    treeview["columns"] = columns # set column names
+
+    for i, c in enumerate(columns):
+        treeview.heading(c, text=c, anchor='w')
+        treeview.column(c, width=sizes.get(c, 75), anchor='w')
+
+    # update table
+    for _ , row in df_now.iterrows():
+        treeview.insert('', 'end', values=row.tolist())
+    
     root.mainloop()
