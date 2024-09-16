@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+# from tkinter import ttk
 import tk_helper as tkh
 import data
 
@@ -42,12 +42,21 @@ if __name__=="__main__":
     # update_text = tk.Label(window.top_frame, text='Last Update:')
     # update_text.grid(row=0, column=0, sticky="e")
 
-    # define update button
-    update_button = tk.Button(window.bottom_right_frame, text='Update')
-    time_button = tk.Checkbutton(window.bottom_right_frame, text="Time", background="White") # filter for current time
-    day_button = tk.Checkbutton(window.bottom_right_frame, text="Day", background="White") # filter for current day
-    room_button = tk.Checkbutton(window.bottom_right_frame, text="Room", background="White") # filter by room
-    instructor_button = tk.Checkbutton(window.bottom_right_frame, text="Instructor", background="White") # filter by instructor
+    def on_update_button_press():
+        print(time_var.get())
+
+    # define default filtering values
+    time_var = tk.BooleanVar(value=1)
+    day_var = tk.BooleanVar(value=1)
+    room_var = tk.BooleanVar(value=0)
+    instructor_var = tk.BooleanVar(value=0)
+    
+    # define filtering options button
+    update_button = tk.Button(window.bottom_right_frame, text='Update', command=on_update_button_press)
+    time_button = tk.Checkbutton(window.bottom_right_frame, text="Time", background="White", variable=time_var) # filter for current time
+    day_button = tk.Checkbutton(window.bottom_right_frame, text="Day", background="White", variable=day_var) # filter for current day
+    room_button = tk.Checkbutton(window.bottom_right_frame, text="Room", background="White", variable=room_var) # filter by room
+    instructor_button = tk.Checkbutton(window.bottom_right_frame, text="Instructor", background="White", variable=instructor_var) # filter by instructor
 
     time_button.grid(row=0, column=0, sticky="ew")
     day_button.grid(row=0, column=1, sticky="ew")
