@@ -32,6 +32,22 @@ def parse_date_str(date_str: str) -> dt.date:
     month, day, year = date_str.split("/")
     return dt.date(int(year), int(month), int(day))
 
+def get_locations(df: pd.DataFrame) -> list:
+    locations = sorted(df["Location"].unique())
+    return locations
+
+def get_instructors(df: pd.DataFrame) -> list:
+        """
+        get a list off all instructors
+        """
+        instructors = df[df["Instructor / Organization"].notna()]["Instructor / Organization"].unique() # get list of non nan Instructors
+        instructors = [x.replace(" (Instr)", "") for x in instructors] # remove " (Instr)" substring
+        instructors = [name for person in instructors for name in person.split('\n')] # split multiple names
+        instructors = list(dict.fromkeys(instructors)) # remove duplicates
+        instructors = [item for item in instructors if "," in item] # remove Club names
+        instructors = sorted(instructors) # sort alphabetically
+        return instructors
+
 def load_df(file_name: str) -> pd.DataFrame:
     """
     Loads and formats a DataFrame from the given csv filename
