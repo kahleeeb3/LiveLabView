@@ -76,7 +76,8 @@ class Content:
             "instructor":tk.BooleanVar(value=0)
         }
 
-        auto_update_button = tk.Checkbutton(self.window.bottom_right_frame, text="Auto Update", background="White", variable=self.filter_vars["auto_update"])
+        auto_update_button = tk.Checkbutton(
+            self.window.bottom_right_frame, text="Auto Update", background="White", variable=self.filter_vars["auto_update"], command=self.auto_update)
         update_button = tk.Button(self.window.bottom_right_frame, text='Update', command=self.on_update_button_press)
         time_button = tk.Checkbutton(self.window.bottom_right_frame, text="Time", background="White", variable=self.filter_vars["time"])
         day_button = tk.Checkbutton(self.window.bottom_right_frame, text="Day", background="White", variable=self.filter_vars["day"])
@@ -151,17 +152,13 @@ class Content:
         self.update_text.config(text=f'Last Update: {dt.datetime.today().strftime('%I:%M %p')}')
 
     def auto_update(self):
-
-        minutes = 10
-        seconds = 0
-        time_delay = (minutes*60000)+ (seconds * 1000)
-
         auto_update = self.filter_vars["auto_update"].get()
-        if(auto_update):        
+        if(auto_update):   
+            minutes = 0
+            seconds = 5
+            time_delay = (minutes*60000)+ (seconds * 1000)
             self.on_update_button_press()
-        else:
-            pass
-        self.root.after(time_delay, self.auto_update)
+            self.root.after(time_delay, self.auto_update)
 
 
 if __name__=="__main__":
