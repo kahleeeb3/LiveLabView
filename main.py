@@ -7,7 +7,13 @@ import pandas as pd
 
 class Content:
     def __init__(self):
+
+        self.root = tk.Tk()
+        self.root.iconbitmap("icon.ico")
+        self.root.title("LiveLabView")
+
         self.load_data()
+        # self.create_file_menu()
         self.create_window()
         self.create_location_selection()
         self.create_instructor_selection()
@@ -19,8 +25,15 @@ class Content:
         self.instructors = data.get_instructors(self.df)
         self.locations = data.get_locations(self.df)
 
+    def create_file_menu(self):
+        menu = tk.Menu(self.root)
+        self.root.config(menu=menu)
+        filemenu = tk.Menu(menu)
+        menu.add_cascade(label='File', menu=filemenu)
+        filemenu.add_command(label='Open')
+        filemenu.add_command(label='Save')
+
     def create_window(self):
-        self.root = tk.Tk()
         self.window = tkh.Window(self.root)
         self.collapsable_width = 40
         self.collapsable_height = 96
