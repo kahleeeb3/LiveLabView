@@ -69,18 +69,21 @@ class Content:
         self.update_text.grid(row=0, column=0, sticky="e")
         
         self.filter_vars = {
+            "auto_update": tk.BooleanVar(value=1),
             "time": tk.BooleanVar(value=1),
             "day": tk.BooleanVar(value=1),
             "room":tk.BooleanVar(value=0),
             "instructor":tk.BooleanVar(value=0)
         }
 
+        auto_update_button = tk.Checkbutton(self.window.bottom_right_frame, text="Auto Update", background="White", variable=self.filter_vars["auto_update"])
         update_button = tk.Button(self.window.bottom_right_frame, text='Update', command=self.on_update_button_press)
         time_button = tk.Checkbutton(self.window.bottom_right_frame, text="Time", background="White", variable=self.filter_vars["time"])
         day_button = tk.Checkbutton(self.window.bottom_right_frame, text="Day", background="White", variable=self.filter_vars["day"])
         room_button = tk.Checkbutton(self.window.bottom_right_frame, text="Room", background="White", variable=self.filter_vars["room"])
         instructor_button = tk.Checkbutton(self.window.bottom_right_frame, text="Instructor", background="White", variable=self.filter_vars["instructor"])
 
+        auto_update_button.grid(row=0, column=0, sticky="nsw")
         time_button.grid(row=0, column=1, sticky="nsew")
         day_button.grid(row=0, column=2, sticky="nsew")
         room_button.grid(row=0, column=3, sticky="nsew")
@@ -148,11 +151,16 @@ class Content:
         self.update_text.config(text=f'Last Update: {dt.datetime.today().strftime('%I:%M %p')}')
 
     def auto_update(self):
+
         minutes = 10
         seconds = 0
         time_delay = (minutes*60000)+ (seconds * 1000)
-    
-        self.on_update_button_press()
+
+        auto_update = self.filter_vars["auto_update"].get()
+        if(auto_update):        
+            self.on_update_button_press()
+        else:
+            pass
         self.root.after(time_delay, self.auto_update)
 
 
