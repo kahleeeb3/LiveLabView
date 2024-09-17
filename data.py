@@ -78,11 +78,12 @@ def get_instructors(df: pd.DataFrame) -> list:
         get a list off all instructors
         """
         instructors = df[df["Instructor / Organization"].notna()]["Instructor / Organization"].unique() # get list of non nan Instructors
+        instructors = [name for person in instructors for name in person.split(' (Instr), ')] # split multiple names
         instructors = [x.replace(" (Instr)", "") for x in instructors] # remove " (Instr)" substring
-        instructors = [name for person in instructors for name in person.split('\n')] # split multiple names
         instructors = list(dict.fromkeys(instructors)) # remove duplicates
         instructors = [item for item in instructors if "," in item] # remove Club names
         instructors = sorted(instructors) # sort alphabetically
+        print(len(instructors))
         return instructors
 
 def load_df(file_name: str) -> pd.DataFrame:
