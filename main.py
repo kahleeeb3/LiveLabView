@@ -1,6 +1,9 @@
 import tkinter as tk
+from tkinter import ttk
 import tk_helper as tkh
 import data
+import datetime as dt
+import pandas as pd
 
 class Content:
     def __init__(self):
@@ -9,6 +12,7 @@ class Content:
         self.create_location_selection()
         self.create_instructor_selection()
         self.create_filter_menu()
+        self.create_table()
 
     def load_data(self):
         self.df = data.load_df("meetings.csv")
@@ -57,41 +61,66 @@ class Content:
         room_button = tk.Checkbutton(self.window.bottom_right_frame, text="Room", background="White", variable=self.filter_vars["room"])
         instructor_button = tk.Checkbutton(self.window.bottom_right_frame, text="Instructor", background="White", variable=self.filter_vars["instructor"])
 
-        time_button.grid(row=0, column=0, sticky="ew")
-        day_button.grid(row=0, column=1, sticky="ew")
-        room_button.grid(row=0, column=2, sticky="ew")
-        instructor_button.grid(row=0, column=3, sticky="ew")
-        update_button.grid(row=0, column=4, sticky="ew")
+        time_button.grid(row=0, column=1, sticky="ew")
+        day_button.grid(row=0, column=2, sticky="ew")
+        room_button.grid(row=0, column=3, sticky="ew")
+        instructor_button.grid(row=0, column=4, sticky="ew")
+        update_button.grid(row=0, column=5, sticky="ew")
 
     def on_update_button_press(self):
-        for filter in self.filter_vars:
-            print(self.filter_vars[filter].get())
+        df = self.df
+        today = dt.datetime.today()
+
+        # update the filters
+        if self.filter_vars["time"].get():
+            df = df[(df["Start"] <= today.time()) & (df["End"] >= today.time())]
+
+        if self.filter_vars["day"].get():
+            df = df[(df["Date"] == today.date())]
+
+        if self.filter_vars["room"].get():
+            df_room = df.drop(df.index) # empty df
+            for l in self.location_vars:
+                if self.location_vars[l].get():
+                    temp_df = df[df['Location'].str.contains(l, case=False, na=False)]
+                    df_room = pd.concat([df_room, temp_df])
+
+            df = df_room
+
+        if self.filter_vars["instructor"].get():
+            df_instructor = df.drop(df.index) # empty df
+            for i in self.instructor_vars:
+                if self.instructor_vars[i].get():
+                    temp_df = df[df["Instructor / Organization"].str.contains(i, case=False, na=False)]
+                    df_instructor = pd.concat([df_instructor, temp_df])
+
+            df = df_instructor
+
+        self.df_update = df
+        self.update_table()
+
+    def create_table(self):
+        self.treeview = ttk.Treeview(self.window.bottom_right_frame, show="headings")
+        self.treeview.grid(row=1, column=0, columnspan = 6,sticky="w")
+        columns = self.df.columns.values.tolist()
+        sizes = {"Name":75, "Section":75, "Title":160, "Start": 60, "End": 60, "Location": 75, "Instructor": 300}
+        self.treeview["columns"] = columns # set column names
+
+        for c in columns:
+            self.treeview.heading(c, text=c, anchor='w')
+            self.treeview.column(c, width=sizes.get(c, 75), anchor='w')
+
+    def update_table(self):
+
+        # clear previous data
+        for item in self.treeview.get_children():
+            self.treeview.delete(item)
+
+        # update table
+        for _ , row in self.df_update.iterrows():
+            self.treeview.insert('', 'end', values=row.tolist())
 
 
-
-
-
-
-content = Content()
-content.root.mainloop()
-
-"""
-
-    def on_update_button_press():
-        
-        # get which instructors are selected
-        for instructor in instructors_vars:
-            if instructors_vars[instructor].get():
-                print(instructor)
-
-    # define default filtering values
-    
-    
-    # define filtering options button
-    
-
-    
-    
-    root.mainloop()
-
-"""
+if __name__=="__main__":
+    content = Content()
+    content.root.mainloop()
