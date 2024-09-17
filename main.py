@@ -20,6 +20,9 @@ class Content:
         self.create_filter_menu()
         self.create_table()
 
+        # every 10 minutes update the table
+        self.auto_update()
+
     def load_data(self):
         self.df = data.load_df("meetings.csv")
         self.instructors = data.get_instructors(self.df)
@@ -140,7 +143,15 @@ class Content:
         # modify update text
         self.update_text.config(text=f'Last Update: {dt.datetime.today().strftime('%I:%M %p')}')
 
+    def auto_update(self):
+        minutes = 10
+        seconds = 0
+        time_delay = (minutes*60000)+ (seconds * 1000)
+    
+        self.on_update_button_press()
+        self.root.after(time_delay, self.auto_update)
+
+
 if __name__=="__main__":
     content = Content()
     content.root.mainloop()
-
