@@ -2,7 +2,8 @@ events.pkl
 events.csv
 events_formatted.csv
 meetings.csv
-LiveLabView.spec
+main.spec
 /__pycache__
 /build
 /dist
+LiveLabView.zip
