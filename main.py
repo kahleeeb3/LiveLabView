@@ -154,8 +154,8 @@ class Content:
     def auto_update(self):
         auto_update = self.filter_vars["auto_update"].get()
         if(auto_update):   
-            minutes = 0
-            seconds = 5
+            minutes = 10
+            seconds = 0
             time_delay = (minutes*60000)+ (seconds * 1000)
             self.on_update_button_press()
             self.root.after(time_delay, self.auto_update)
