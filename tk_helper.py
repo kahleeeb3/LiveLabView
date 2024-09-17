@@ -102,7 +102,7 @@ class Window:
         self.create_bottom_right_frame()
 
     def create_top_frame(self):
-        self.top_frame = tk.Frame(self.root, bg='red', width=50, height=25)
+        self.top_frame = tk.Frame(self.root, bg='light grey', width=50, height=25)
         self.top_frame.grid(row=0, sticky="nsew")
         self.top_frame.grid_columnconfigure(0, weight=1)
 
@@ -115,6 +115,6 @@ class Window:
         self.bottom_left_frame.grid(row=0, column=0, sticky="nsew")
 
     def create_bottom_right_frame(self):
-        self.bottom_right_frame = tk.Frame(self.bottom_frame, bg='yellow', width=250, height=190)
+        self.bottom_right_frame = tk.Frame(self.bottom_frame, bg='white', width=250, height=190)
         self.bottom_right_frame.grid(row=0, column=1, sticky="nsew")
         self.bottom_right_frame.grid_columnconfigure(0, weight=1)

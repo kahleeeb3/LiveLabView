@@ -23,10 +23,11 @@ class Content:
         self.root = tk.Tk()
         self.window = tkh.Window(self.root)
         self.collapsable_width = 40
+        self.collapsable_height = 96
 
     def create_location_selection(self):
         location_menu = tkh.Collapsable(master=self.window.bottom_left_frame, row=0, column=0, name="Locations", width=self.collapsable_width)
-        location_scroll = tkh.ScrollFrame(location_menu.collapsed_content, width=25, height=100)
+        location_scroll = tkh.ScrollFrame(location_menu.collapsed_content, width=25, height=self.collapsable_height)
 
         self.location_vars = {}
         for i, l in enumerate(self.locations):
@@ -37,7 +38,7 @@ class Content:
 
     def create_instructor_selection(self):
         instructor_menu = tkh.Collapsable(master=self.window.bottom_left_frame, row=1, column=0, name="Instructors", width=self.collapsable_width)
-        instructor_scroll = tkh.ScrollFrame(instructor_menu.collapsed_content, width=25, height=100)
+        instructor_scroll = tkh.ScrollFrame(instructor_menu.collapsed_content, width=25, height=self.collapsable_height)
 
         self.instructor_vars = {}
         for i, inst in enumerate(self.instructors):
@@ -47,6 +48,9 @@ class Content:
         instructor_scroll.pack(side="top", fill="both", expand=True)
 
     def create_filter_menu(self):
+        
+        self.update_text = tk.Label(self.window.top_frame, text='Last Update:', background="light grey")
+        self.update_text.grid(row=0, column=0, sticky="e")
         
         self.filter_vars = {
             "time": tk.BooleanVar(value=1),
@@ -61,11 +65,11 @@ class Content:
         room_button = tk.Checkbutton(self.window.bottom_right_frame, text="Room", background="White", variable=self.filter_vars["room"])
         instructor_button = tk.Checkbutton(self.window.bottom_right_frame, text="Instructor", background="White", variable=self.filter_vars["instructor"])
 
-        time_button.grid(row=0, column=1, sticky="ew")
-        day_button.grid(row=0, column=2, sticky="ew")
-        room_button.grid(row=0, column=3, sticky="ew")
-        instructor_button.grid(row=0, column=4, sticky="ew")
-        update_button.grid(row=0, column=5, sticky="ew")
+        time_button.grid(row=0, column=1, sticky="nsew")
+        day_button.grid(row=0, column=2, sticky="nsew")
+        room_button.grid(row=0, column=3, sticky="nsew")
+        instructor_button.grid(row=0, column=4, sticky="nsew")
+        update_button.grid(row=0, column=5, sticky="nsew")
 
     def on_update_button_press(self):
         df = self.df
@@ -101,9 +105,9 @@ class Content:
 
     def create_table(self):
         self.treeview = ttk.Treeview(self.window.bottom_right_frame, show="headings")
-        self.treeview.grid(row=1, column=0, columnspan = 6,sticky="w")
+        self.treeview.grid(row=1, column=0, columnspan = 6,sticky="nsew")
         columns = self.df.columns.values.tolist()
-        sizes = {"Name":75, "Section":75, "Title":160, "Start": 60, "End": 60, "Location": 75, "Instructor": 300}
+        sizes = {"Name":95,"Title":160, "Start": 60, "End": 60, "Location": 75, "Instructor / Organization": 300}
         self.treeview["columns"] = columns # set column names
 
         for c in columns:
@@ -120,7 +124,10 @@ class Content:
         for _ , row in self.df_update.iterrows():
             self.treeview.insert('', 'end', values=row.tolist())
 
+        # modify update text
+        self.update_text.config(text=f'Last Update: {dt.datetime.today().strftime('%I:%M %p')}')
 
 if __name__=="__main__":
     content = Content()
     content.root.mainloop()
+

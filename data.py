@@ -1,6 +1,37 @@
 import pandas as pd
 import datetime as dt
 
+def parse_multiple_class_names(df:pd.DataFrame) -> pd.DataFrame:
+
+    multiple_names = df["Name"].str.contains('\n', case=False, na=False)
+    df_two_names = df[multiple_names] # isolate classes with two names
+    df = df[~multiple_names] # remove those from df
+
+    # create new df
+    new_rows = []
+    for _, row in df_two_names.iterrows():
+
+        # names
+        names = row["Name"].split('\n') # split the names
+        titles = row["Title"].split('\n')
+        sections = row["Section"].split('\n')
+
+        for i in range(len(names)):
+            new_row = row.copy()
+            new_row["Name"] = names[i].lstrip().rstrip()
+
+            if(titles[i].lstrip().rstrip() == ""):
+                new_row["Title"] = titles[i-1].lstrip().rstrip()
+            else:
+                new_row["Title"] = titles[i].lstrip().rstrip()
+
+            new_row["Section"] = sections[i].lstrip().rstrip().replace("*","")
+
+            new_rows.append(new_row)
+
+    df_two_names = pd.DataFrame(new_rows)
+    return pd.concat([df, df_two_names]) # combine them back together
+
 def parse_time_str(time_str: str) -> dt.time:
     """
     Accepts strings in the format of HH:MM(a/p) and
@@ -32,6 +63,12 @@ def parse_date_str(date_str: str) -> dt.date:
     month, day, year = date_str.split("/")
     return dt.date(int(year), int(month), int(day))
 
+def format_instructor_str(cell: str) -> str:
+    if type(cell) == float:
+        return cell
+    
+    return cell.replace('\n', ', ')
+
 def get_locations(df: pd.DataFrame) -> list:
     locations = sorted(df["Location"].unique())
     return locations
@@ -61,6 +98,9 @@ def load_df(file_name: str) -> pd.DataFrame:
     df = df.rename(columns={'Published Start': 'Start', 'Published End':'End'})
     df[["Start", "End"]] = df[["Start", "End"]].map(parse_time_str)
     df[["Date"]] = df[["Date"]].map(parse_date_str)
+    df[["Instructor / Organization"]] = df[["Instructor / Organization"]].map(format_instructor_str)
+    df = parse_multiple_class_names(df) # remove multiple classes in one line
+
 
     return df
 
