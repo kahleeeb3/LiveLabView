@@ -83,7 +83,6 @@ def get_instructors(df: pd.DataFrame) -> list:
         instructors = list(dict.fromkeys(instructors)) # remove duplicates
         instructors = [item for item in instructors if "," in item] # remove Club names
         instructors = sorted(instructors) # sort alphabetically
-        print(len(instructors))
         return instructors
 
 def load_df(file_name: str) -> pd.DataFrame:

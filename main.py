@@ -127,8 +127,12 @@ class Content:
         self.treeview["columns"] = columns # set column names
 
         for c in columns:
-            self.treeview.heading(c, text=c, anchor='w')
+            self.treeview.heading(c, text=c, anchor='w', command=lambda _col=c: self.sort_by_column(_col))
             self.treeview.column(c, width=sizes.get(c, 75), anchor='w')
+
+    def sort_by_column(self, column):
+        self.df_update = self.df_update.sort_values(by=column, ascending=True)
+        self.update_table()
 
     def update_table(self):
 
