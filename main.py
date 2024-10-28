@@ -40,7 +40,7 @@ class Content:
         self.window = tkh.Window(self.root)
         self.collapsable_width = 40
         self.collapsable_height = 96
-
+    
     def create_location_selection(self):
         location_menu = tkh.Collapsable(master=self.window.bottom_left_frame, row=0, column=0, name="Locations", width=self.collapsable_width)
         location_scroll = tkh.ScrollFrame(location_menu.collapsed_content, width=25, height=self.collapsable_height)
@@ -70,37 +70,53 @@ class Content:
         
         self.filter_vars = {
             "auto_update": tk.BooleanVar(value=1),
+            "date_text" : tk.StringVar(),
             "time": tk.BooleanVar(value=1),
-            "day": tk.BooleanVar(value=1),
+            "date": tk.BooleanVar(value=1),
             "room":tk.BooleanVar(value=0),
             "instructor":tk.BooleanVar(value=0)
         }
 
+        # Filter Buttons
         auto_update_button = tk.Checkbutton(
             self.window.bottom_right_frame, text="Auto Update", background="White", variable=self.filter_vars["auto_update"], command=self.auto_update)
+        date_label = tk.Label(self.window.bottom_right_frame, text='Date:')
+        date_entry = tk.Entry(self.window.bottom_right_frame, textvariable=self.filter_vars["date_text"])
         update_button = tk.Button(self.window.bottom_right_frame, text='Update', command=self.on_update_button_press)
         time_button = tk.Checkbutton(self.window.bottom_right_frame, text="Time", background="White", variable=self.filter_vars["time"])
-        day_button = tk.Checkbutton(self.window.bottom_right_frame, text="Day", background="White", variable=self.filter_vars["day"])
+        date_button = tk.Checkbutton(self.window.bottom_right_frame, text="Date", background="White", variable=self.filter_vars["date"])
         room_button = tk.Checkbutton(self.window.bottom_right_frame, text="Room", background="White", variable=self.filter_vars["room"])
         instructor_button = tk.Checkbutton(self.window.bottom_right_frame, text="Instructor", background="White", variable=self.filter_vars["instructor"])
 
+        # Filter Layout
         auto_update_button.grid(row=0, column=0, sticky="nsw")
-        time_button.grid(row=0, column=1, sticky="nsew")
-        day_button.grid(row=0, column=2, sticky="nsew")
-        room_button.grid(row=0, column=3, sticky="nsew")
-        instructor_button.grid(row=0, column=4, sticky="nsew")
-        update_button.grid(row=0, column=5, sticky="nsew")
+        date_label.grid(row=0, column=1, sticky="nsw")
+        date_entry.grid(row=0, column=2, sticky="nsw")
+        time_button.grid(row=0, column=3, sticky="nsew")
+        date_button.grid(row=0, column=4, sticky="nsew")
+        room_button.grid(row=0, column=5, sticky="nsew")
+        instructor_button.grid(row=0, column=6, sticky="nsew")
+        update_button.grid(row=0, column=7, sticky="nsew")
 
     def on_update_button_press(self):
         df = self.df
         today = dt.datetime.today()
 
         # update the filters
+
+        # if a date is provided
+        if self.filter_vars["date_text"].get():
+            # if you want to filter by that date
+            if self.filter_vars["date"].get():
+                date_object = dt.datetime.strptime(self.filter_vars["date_text"].get(), "%Y-%m-%d").date()
+                df = df[(df["Date"] == date_object)]
+        # if a date is not provided, give current date
+        else:
+            self.filter_vars["date_text"].set(today.strftime('%Y-%m-%d'))
+            df = df[(df["Date"] == today.date())]
+            
         if self.filter_vars["time"].get():
             df = df[(df["Start"] <= today.time()) & (df["End"] >= today.time())]
-
-        if self.filter_vars["day"].get():
-            df = df[(df["Date"] == today.date())]
 
         if self.filter_vars["room"].get():
             df_room = df.drop(df.index) # empty df
@@ -125,7 +141,7 @@ class Content:
 
     def create_table(self):
         self.treeview = ttk.Treeview(self.window.bottom_right_frame, show="headings")
-        self.treeview.grid(row=1, column=0, columnspan = 6,sticky="nsew")
+        self.treeview.grid(row=1, column=0, columnspan = 10,sticky="nsew")
         columns = self.df.columns.values.tolist()
         sizes = {"Name":95,"Title":160, "Start": 60, "End": 60, "Location": 75, "Instructor / Organization": 300}
         self.treeview["columns"] = columns # set column names
