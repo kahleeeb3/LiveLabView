@@ -14,7 +14,6 @@ class Window:
     def create_top_frame(self):
         self.top_frame = tk.Frame(self.root, bg='red', width=50, height=25)
         self.top_frame.grid(row=0, sticky="nsew")
-        tk.Grid.rowconfigure(self.root, 0, weight=0)
         tk.Grid.columnconfigure(self.root, 0, weight=1)
 
     def create_bottom_frame(self):
