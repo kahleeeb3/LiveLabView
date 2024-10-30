@@ -25,3 +25,7 @@ The `Tkinter Examples` folder is a walkthrough of how to use to Tkinter. It is b
 4. Widgets
 
     Add widgets to the respective frames
+
+5. Tables
+
+    Display pandas data frames in a tabular format using Treeview
