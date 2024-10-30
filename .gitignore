@@ -8,3 +8,4 @@ main.spec
 /build
 /dist
 LiveLabView.zip
+Tkinter Examples/__pycache__
