@@ -1,7 +1,57 @@
 import tkinter as tk
-import tkinter as tk
+from tkinter import ttk
 import platform
 
+class Table:
+
+    def __init__(self, master, df, row, column):
+
+        # store table data
+        self.df = df
+        columns = df.columns.values.tolist()
+        
+        # create a table
+        self.table = ttk.Treeview(master, show="headings", columns=columns)
+        self.table.grid(row=row, column=column ,sticky="nsew")
+
+        # configure table to expand with master frame
+        master.columnconfigure(column, weight=1) # expand horizontally
+        master.rowconfigure(row, weight=1) # expand vertically
+        
+        # define headings
+        for c in columns:
+            self.table.heading(c, text=c, anchor='w', command=lambda _col=c: self.sort_by_column(_col))
+
+        # define rows
+        for _ , row in df.iterrows():
+            self.table.insert('', tk.END, values=row.tolist())
+
+        # Bind resize event to adjust columns
+        master.bind("<Configure>", self.adjust_column_widths)
+
+    def adjust_column_widths(self, event):
+        # Get the available width for the table
+        total_width = event.width
+        num_columns = len(self.df.columns)
+        
+        # Set each column width as a proportion of the total width
+        if num_columns > 0:
+            column_width = total_width // num_columns
+            for c in self.df.columns:
+                self.table.column(c, width=column_width)
+
+    def sort_by_column(self, column):
+        self.df = self.df.sort_values(by=column, ascending=True)
+        self.update_table()
+
+    def update_table(self):
+        # clear previous data
+        for child in self.table.get_children():
+            self.table.delete(child)
+
+        # update table
+        for _ , row in self.df.iterrows():
+            self.table.insert('', 'end', values=row.tolist())
 
 class ScrollFrame(tk.Frame):
     """
@@ -11,8 +61,8 @@ class ScrollFrame(tk.Frame):
     def __init__(self, parent, width=0, height=0):
         super().__init__(parent) # create a frame (self)
 
-        self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff", width=width, height=height)          #place canvas on self
-        self.viewPort = tk.Frame(self.canvas, background="#ffffff")                    #place a frame on the canvas, this frame will hold the child widgets 
+        self.canvas = tk.Canvas(self, borderwidth=0, background="white", width=width, height=height)          #place canvas on self
+        self.viewPort = tk.Frame(self.canvas, background="white")                    #place a frame on the canvas, this frame will hold the child widgets 
         self.vsb = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview) #place a scrollbar on self 
         self.canvas.configure(yscrollcommand=self.vsb.set)                          #attach scrollbar action to scroll of canvas
 
@@ -63,10 +113,10 @@ class ScrollFrame(tk.Frame):
         else:
             self.canvas.unbind_all("<MouseWheel>")
 
-class Collapsable():
+class Collapsible():
     def __init__(self, master, row, column, name, width):
 
-        self.body = tk.Frame(master, bg='purple', width=width)
+        self.body = tk.Frame(master, bg='white', width=width)
         self.body.grid(row=row, column=column, sticky="nsew")
         tk.Grid.rowconfigure(master, row, weight=1)
         
@@ -78,14 +128,14 @@ class Collapsable():
         self.create_collapsed_content_frame()
 
     def create_button_frame(self):
-        self.button_frame = tk.Frame(self.body, bg='grey', width=25, height=25)
+        self.button_frame = tk.Frame(self.body, bg='white', width=25, height=25)
         self.button_frame.grid(row=0, column=0, sticky="nsew")
 
         self.button = tk.Button(self.button_frame, text=f'{self.name} \u25BC', width=self.width, command=self.collapse)
         self.button.grid(row=0, sticky="nsew")
 
     def create_collapsed_content_frame(self):
-        self.collapsed_content = tk.Frame(self.body, bg='cyan')
+        self.collapsed_content = tk.Frame(self.body, bg='white')
         self.collapsed_content.grid(row=1, column=0, sticky="nsew")
         tk.Grid.rowconfigure(self.body, 1, weight=1)
 
@@ -103,28 +153,35 @@ class Window:
     def __init__(self, root):
         self.root = root
         self.create_top_frame()
-        self.create_bottom_frame()
+        self.create_left_frame()
         self.create_bottom_left_frame()
         self.create_bottom_right_frame()
+        self.create_bottom_frame()
 
     def create_top_frame(self):
-        self.top_frame = tk.Frame(self.root, bg='light grey', height=25)
-        self.top_frame.grid(row=0, sticky="nsew")
-        tk.Grid.columnconfigure(self.root, 0, weight=1)
-        self.top_frame.columnconfigure(0, weight = 1)
+        top_frame = tk.Frame(self.root, bg='light grey', height=10)
+        top_frame.grid(row=0, sticky="nsew", columnspan=3)
+        self.root.columnconfigure(1, weight=1)
+        self.top_frame = top_frame
 
-    def create_bottom_frame(self):
-        self.bottom_frame = tk.Frame(self.root, bg='green')
-        self.bottom_frame.grid(row=1, sticky="nsew")
-        tk.Grid.rowconfigure(self.root, 1, weight=1)
+    def create_left_frame(self):
+        left_frame = tk.Frame(self.root, bg='white', width=10)
+        left_frame.grid(row=1, column=0, sticky="nsew", rowspan=2)
+        self.root.rowconfigure(2, weight=1)
+        self.left_frame = left_frame
     
     def create_bottom_left_frame(self):
-        self.bottom_left_frame = tk.Frame(self.bottom_frame, bg='light grey')
-        self.bottom_left_frame.grid(row=0, column=0, sticky="nsew")
-        tk.Grid.rowconfigure(self.bottom_frame, 0, weight=1)
+        bottom_left_frame = tk.Frame(self.root, bg='white', height=10)
+        bottom_left_frame.grid(row=1, column=1, sticky="nsew")
+        self.bottom_left_frame = bottom_left_frame
 
     def create_bottom_right_frame(self):
-        self.bottom_right_frame = tk.Frame(self.bottom_frame, bg='white')
-        self.bottom_right_frame.grid(row=0, column=1, sticky="nsew")
-        tk.Grid.rowconfigure(self.bottom_frame, 0, weight=1)
-        tk.Grid.columnconfigure(self.bottom_frame, 1, weight=1)
+        bottom_right_frame = tk.Frame(self.root, bg='white', height=10)
+        bottom_right_frame.grid(row=1, column=2, sticky="nsew")
+        self.root.columnconfigure(2, weight=1)
+        self.bottom_right_frame = bottom_right_frame
+
+    def create_bottom_frame(self):
+        bottom_frame = tk.Frame(self.root, bg='white', width=50, height=25)
+        bottom_frame.grid(row=2, column=1, sticky="nsew", columnspan=2)
+        self.bottom_frame = bottom_frame

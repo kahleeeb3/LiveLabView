@@ -91,18 +91,22 @@ def load_df(file_name: str) -> pd.DataFrame:
     returns the DataFrame Object
     """
 
-    cols = ["Name", "Section", "Type", "Title", "Date", "Published Start", "Published End", "Location", "Instructor / Organization"]
-    df = pd.read_csv(file_name, usecols= cols)
+    try:
+        df = pd.read_pickle(file_name[:-4]+".pkl")
+        return df
+    except:
+        cols = ["Name", "Section", "Type", "Title", "Date", "Published Start", "Published End", "Location", "Instructor / Organization"]
+        df = pd.read_csv(file_name, usecols= cols)
 
-    # format
-    df = df.rename(columns={'Published Start': 'Start', 'Published End':'End'})
-    df[["Start", "End"]] = df[["Start", "End"]].map(parse_time_str)
-    df[["Date"]] = df[["Date"]].map(parse_date_str)
-    df[["Instructor / Organization"]] = df[["Instructor / Organization"]].map(format_instructor_str)
-    df = parse_multiple_class_names(df) # remove multiple classes in one line
+        # format
+        df = df.rename(columns={'Published Start': 'Start', 'Published End':'End'})
+        df[["Start", "End"]] = df[["Start", "End"]].map(parse_time_str)
+        df[["Date"]] = df[["Date"]].map(parse_date_str)
+        df[["Instructor / Organization"]] = df[["Instructor / Organization"]].map(format_instructor_str)
+        df = parse_multiple_class_names(df) # remove multiple classes in one line
+        df.to_pickle(file_name[:-4]+".pkl")
 
-
-    return df
+        return df
 
 def get_now(df: pd.DataFrame) -> pd.DataFrame:
     """

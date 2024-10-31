@@ -1,8 +1,7 @@
 /.vscode
 events.pkl
-events.csv
-events_formatted.csv
 meetings.csv
+meetings.pkl
 main.spec
 /__pycache__
 /build

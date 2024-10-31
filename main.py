@@ -1,19 +1,13 @@
 import tkinter as tk
-from tkinter import ttk
 import tk_helper as tkh
 import data
 import datetime as dt
 import pandas as pd
 
 class Content:
-    def __init__(self):
+    def __init__(self, root):
 
-        self.root = tk.Tk()
-        # self.root.state('zoomed')  # Maximize the window
-        self.root.geometry("1200x400")
-        self.root.iconbitmap("icon.ico")
-        self.root.title("LiveLabView")
-
+        self.root = root
         self.load_data()
         self.create_window()
         self.create_location_selection()
@@ -32,12 +26,11 @@ class Content:
     def create_window(self):
         self.window = tkh.Window(self.root)
         self.collapsable_width = 40
-        self.filter_bar_height = 25
     
     def create_location_selection(self):
 
         # create the collapsable
-        location_menu = tkh.Collapsable(master=self.window.bottom_left_frame, row=0, column=0, name="Locations", width=self.collapsable_width)
+        location_menu = tkh.Collapsible(master=self.window.left_frame, row=0, column=0, name="Locations", width=self.collapsable_width)
 
         # add content to the collapsable
         location_scroll = tkh.ScrollFrame(location_menu.collapsed_content, width=self.collapsable_width)
@@ -51,7 +44,7 @@ class Content:
     def create_instructor_selection(self):
         
         # create the collapsable
-        instructor_menu = tkh.Collapsable(master=self.window.bottom_left_frame, row=1, column=0, name="Instructors", width=self.collapsable_width)
+        instructor_menu = tkh.Collapsible(master=self.window.left_frame, row=1, column=0, name="Instructors", width=self.collapsable_width)
 
         # add content to the collapsable
         instructor_scroll = tkh.ScrollFrame(instructor_menu.collapsed_content, width=self.collapsable_width)
@@ -75,27 +68,16 @@ class Content:
             "instructor":tk.BooleanVar(value=0)
         }
 
-        # divide row into two frame (left and right)
-        left_filter_menu = tk.Frame(self.window.bottom_right_frame, bg='white', height=self.filter_bar_height)
-        left_filter_menu.grid(row=0, column=0, sticky="nsew")
-        tk.Grid.columnconfigure(self.window.bottom_right_frame, 0, weight=1)
-
-        right_filter_menu = tk.Frame(self.window.bottom_right_frame, bg='white', height=self.filter_bar_height)
-        right_filter_menu.grid(row=0, column=1, sticky="nsew")
-        tk.Grid.columnconfigure(self.window.bottom_right_frame, 1, weight=1)
-        right_filter_menu.columnconfigure(0, weight=1) # ensure the first column fills the empty space to the left
-
         # add widgets
         auto_update_button = tk.Checkbutton(
-            left_filter_menu, text="Auto Update", background="White", variable=self.filter_vars["auto_update"], command=self.auto_update)
-        date_label = tk.Label(right_filter_menu, text='Date:')
-        date_entry = tk.Entry(right_filter_menu, textvariable=self.filter_vars["date_text"])
-        time_button = tk.Checkbutton(right_filter_menu, text="Time", background="White", variable=self.filter_vars["time"])
-        date_button = tk.Checkbutton(right_filter_menu, text="Date", background="White", variable=self.filter_vars["date"])
-        room_button = tk.Checkbutton(right_filter_menu, text="Room", background="White", variable=self.filter_vars["room"]) 
-        instructor_button = tk.Checkbutton(right_filter_menu, text="Instructor", background="White", variable=self.filter_vars["instructor"])
-        update_button = tk.Button(right_filter_menu, text='Update', command=self.on_update_button_press)
-
+            self.window.bottom_left_frame, text="Auto Update", background="White", variable=self.filter_vars["auto_update"], command=self.auto_update)
+        date_label = tk.Label(self.window.bottom_right_frame, text='Date:', background="White")
+        date_entry = tk.Entry(self.window.bottom_right_frame, textvariable=self.filter_vars["date_text"])
+        time_button = tk.Checkbutton(self.window.bottom_right_frame, text="Time", background="White", variable=self.filter_vars["time"])
+        date_button = tk.Checkbutton(self.window.bottom_right_frame, text="Date", background="White", variable=self.filter_vars["date"])
+        room_button = tk.Checkbutton(self.window.bottom_right_frame, text="Room", background="White", variable=self.filter_vars["room"]) 
+        instructor_button = tk.Checkbutton(self.window.bottom_right_frame, text="Instructor", background="White", variable=self.filter_vars["instructor"])
+        update_button = tk.Button(self.window.bottom_right_frame, text='Update', command=self.on_update_button_press)
         self.update_text = tk.Label(self.window.top_frame, text='Last Update:', background="light grey")
 
         # define widget locations
@@ -107,8 +89,11 @@ class Content:
         room_button.grid(row=0, column=4, sticky="nse")
         instructor_button.grid(row=0, column=5, sticky="nse")
         update_button.grid(row=0, column=6, sticky="nse")
+        self.update_text.grid(row=0, column=1, sticky="nse")
 
-        self.update_text.grid(row=0, column=0, sticky="nse")
+        # Expand first column for when you want elements to stick to the right
+        self.window.top_frame.grid_columnconfigure(0, weight=1)
+        self.window.bottom_right_frame.grid_columnconfigure(0, weight=1)
 
     def on_update_button_press(self):
         df = self.df
@@ -148,36 +133,14 @@ class Content:
 
             df = df_instructor
 
-        self.df_update = df
-        self.update_table()
-
-    def create_table(self):
-        self.treeview = ttk.Treeview(self.window.bottom_right_frame, show="headings", height = 10)
-        self.treeview.grid(row=1, column=0, columnspan = 2,sticky="nsew")
-        columns = self.df.columns.values.tolist()
-        sizes = {"Name":95,"Title":160, "Start": 60, "End": 60, "Location": 75, "Instructor / Organization": 300}
-        self.treeview["columns"] = columns # set column names
-
-        for c in columns:
-            self.treeview.heading(c, text=c, anchor='w', command=lambda _col=c: self.sort_by_column(_col))
-            self.treeview.column(c, width=sizes.get(c, 75), anchor='w')
-
-    def sort_by_column(self, column):
-        self.df_update = self.df_update.sort_values(by=column, ascending=True)
-        self.update_table()
-
-    def update_table(self):
-
-        # clear previous data
-        for item in self.treeview.get_children():
-            self.treeview.delete(item)
-
-        # update table
-        for _ , row in self.df_update.iterrows():
-            self.treeview.insert('', 'end', values=row.tolist())
+        self.table.df = df
+        self.table.update_table()
 
         # modify update text
         self.update_text.config(text=f'Last Update: {dt.datetime.today().strftime('%I:%M %p')}')
+
+    def create_table(self):
+        self.table = tkh.Table(self.window.bottom_frame, df=self.df, row=0, column=0)
 
     def auto_update(self):
         auto_update = self.filter_vars["auto_update"].get()
@@ -190,5 +153,10 @@ class Content:
 
 
 if __name__=="__main__":
-    content = Content()
+    root = tk.Tk()
+    # self.root.state('zoomed')  # Maximize the window
+    root.geometry("1200x400")
+    root.iconbitmap("icon.ico")
+    root.title("LiveLabView")
+    content = Content(root)
     content.root.mainloop()
