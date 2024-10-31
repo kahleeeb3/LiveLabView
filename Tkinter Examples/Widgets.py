@@ -1,6 +1,8 @@
 import tkinter as tk
 from Resizing import Window
 from Collapsible import Collapsible
+from Table import Table
+import seaborn as sns
 
 def create_widgets(window):
 
@@ -46,6 +48,10 @@ def create_widgets(window):
     location_menu = Collapsible(master=window.left_frame, row=0, column=0, name="Locations", width=collapsable_width)
     instructor_menu = Collapsible(master=window.left_frame, row=1, column=0, name="Instructors", width=collapsable_width)
 
+    # table
+    taxis = sns.load_dataset('taxis').head()
+    table = Table(window.bottom_frame, df=taxis, row=0, column=0)
+
 def on_update_button_press():
     print("Pressed Button")
 
@@ -54,7 +60,8 @@ def auto_update():
 
 if __name__=="__main__":
     root = tk.Tk()
-    root.state('zoomed')
+    # root.state('zoomed')
+    root.geometry("1200x400")
     window = Window(root)
     create_widgets(window)
     root.mainloop()
